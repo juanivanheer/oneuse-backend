@@ -41,7 +41,8 @@ const mercadopago = require('mercadopago');
 //mercadopago.configurations.setAccessToken("TEST-4098695958980794-042601-bbf0cd1a389dea655e9504621063e743-25259647");
 
 //Access token cuenta vendedor test
-mercadopago.configurations.setAccessToken("TEST-6154841231917150-052800-34a55d9d7e73a0024e594c6cb7a6b650-575276817");
+//mercadopago.configurations.setAccessToken("TEST-6154841231917150-052800-34a55d9d7e73a0024e594c6cb7a6b650-575276817");
+mercadopago.configurations.setAccessToken("APP_USR-6154841231917150-052800-3cce632f355c757cbf37f535bd70be21-575276817");
 
 /* ----------------------------------- MODELOS ----------------------------------- */
 const User = require("../auth/auth.model");
