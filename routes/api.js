@@ -2257,6 +2257,9 @@ router.post("/pago-tarjeta-mp", function (req, res) {
         //console.log(error);
         return res.status(500).send(error)
     });
-    
+})
 
+router.post("/mp-webhook", function(req,res){
+    console.log(res);
+    return res.status(200).send("ok");
 })
