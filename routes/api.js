@@ -438,7 +438,7 @@ router.post(
                     if (err) return res.status(500).send({ message: "Imagen no subida" });
                     if (!projectUpdated)
                         return res.status(400).send({ message: "No existe" });
-                    return res.status(200).send({ message: "ok" });
+                    return res.status(200).send(projectUpdated);
                 }
             );
         } else console.log("ERROR");
