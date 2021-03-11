@@ -130,7 +130,7 @@ router.post("/registerGoogle", (req, res) => {
     let userData = req.body;
     let user = new User(userData);
     user.confirmed = true;
-    user.password = ".";
+    user.password = bcrypt.hashSync(randomstring.generate(10));
     user.save((error, usuarioRegistrado) => {
         if (error) {
             console.log(error)
