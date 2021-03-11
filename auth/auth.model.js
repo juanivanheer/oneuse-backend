@@ -9,7 +9,6 @@ const userSchema = new Schema({
         trim: true
     },
 
-
     email: {
         type: String,
         required: true,
@@ -21,7 +20,10 @@ const userSchema = new Schema({
         type: String,
         required: true,
         trim: true
+    },
 
+    tipo: {
+        type: String,
     },
 
     confirmed: {

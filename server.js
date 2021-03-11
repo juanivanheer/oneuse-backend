@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const PORT = process.env.PORT || 4201;
+const PORT = process.env.PORT || 4201; //En Windows, ejecutar 'taskkill /F /IM node.exe' por si tira error EADDRINUSE
 const api = require('./routes/api');
 const app = express();
 const cors = require('cors');

@@ -126,6 +126,21 @@ router.post("/register", (req, res) => {
     });
 });
 
+router.post("/registerGoogle", (req, res) => {
+    let userData = req.body;
+    let user = new User(userData);
+    user.confirmed = true;
+    user.password = ".";
+    user.save((error, usuarioRegistrado) => {
+        if (error) {
+            console.log(error)
+            res.status(401).send("Error en base de datos. Probar nuevamente");
+        } else {
+            res.status(200).send(usuarioRegistrado);
+        }
+    })
+})
+
 router.post("/login", (req, res) => {
     let userData = req.body;
 
@@ -2249,7 +2264,7 @@ router.post("/pago-tarjeta-mp", function (req, res) {
     };
     */
     let payment_data = req.body;
-    
+
     mercadopago.payment.save(payment_data).then(function (data) {
         //console.log(data);
         return res.status(200).send(data)
@@ -2259,7 +2274,7 @@ router.post("/pago-tarjeta-mp", function (req, res) {
     });
 })
 
-router.post("/mp-webhook", function(req,res){
+router.post("/mp-webhook", function (req, res) {
     console.log(res);
     return res.status(200).send("ok");
 })
