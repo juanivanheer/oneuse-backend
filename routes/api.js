@@ -141,6 +141,32 @@ router.post("/registerGoogle", (req, res) => {
     })
 })
 
+router.post("/registerFacebook", (req, res) => {
+    let userData = req.body;
+    let user = new User(userData);
+    user.confirmed = true;
+    user.password = bcrypt.hashSync(randomstring.generate(10));
+    user.save((error, usuarioRegistrado) => {
+        if (error) {
+            console.log(error)
+            res.status(401).send("Error en base de datos. Probar nuevamente");
+        } else {
+            res.status(200).send(usuarioRegistrado);
+        }
+    })
+})
+
+router.post("/updateFacebookImg", (req, res) => {
+    let usuario = req.body;
+    User.findOneAndUpdate({ email: usuario.email }, usuario, (error, user) => {
+        if (error) {
+            console.log("no trajo nada");
+        } else {
+            res.status(200).send(user);
+        }
+    })
+})
+
 router.post("/login", (req, res) => {
     let userData = req.body;
 

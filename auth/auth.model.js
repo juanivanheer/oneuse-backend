@@ -32,6 +32,10 @@ const userSchema = new Schema({
         defaultValue: false
     },
 
+    id_facebook: {
+        type: String
+    },
+
     nombre: {
         type: String,
     },
