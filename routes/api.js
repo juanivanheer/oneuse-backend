@@ -1743,7 +1743,7 @@ router.post("/update-superadmin-alquiler/", function (req, res) {
 });
 
 router.post(
-    "/registrar-alquiler/:id_publicacion/:usuarioPropietario/:usuarioLocatario/:cantidadDias/:cantidadAlquilar/:imagen",
+    "/registrar-alquiler/:id_publicacion/:usuarioPropietario/:usuarioLocatario/:cantidadDias/:cantidadAlquilar/:imagen/:montoTotal",
     function (req, res) {
         var estado = "En proceso de pago";
         var id_publicacion = req.params.id_publicacion;
@@ -1753,7 +1753,8 @@ router.post(
         var cantidadAlquilar = req.params.cantidadAlquilar;
         var imagen = req.params.imagen;
         var fuePagado = false;
-
+        var montoTotal = req.params.montoTotal;
+        
         var objeto = {
             imagen: imagen,
             fuePagado: fuePagado,
@@ -1763,6 +1764,7 @@ router.post(
             name_usuarioLocatario: name_usuarioLocatario,
             cantidadDias: cantidadDias,
             cantidadAlquilar: cantidadAlquilar,
+            montoTotal: montoTotal
         };
 
         var misAlquileres = new MisAlquileres(objeto);
@@ -1777,8 +1779,8 @@ router.post(
     }
 );
 
-router.post("/registrar-proceso-entrega/:id_publicacion", function (req, res) {
-    var id_publicacion = req.params.id_publicacion;
+router.post("/registrar-proceso-entrega/:id_alquiler", function (req, res) {
+    var id_alquiler = req.params.id_alquiler;
     var estado = "En proceso de entrega";
     var codigoEntregaPropietario = randomstring.generate(10);
     var codigoEntregaLocatario = randomstring.generate(10);
@@ -1799,22 +1801,21 @@ router.post("/registrar-proceso-entrega/:id_publicacion", function (req, res) {
         codigoLocatarioIngresado: codigoLocatarioIngresado,
     };
 
-    MisAlquileres.findOneAndUpdate(
-        { id_publicacion: id_publicacion },
+    MisAlquileres.findByIdAndUpdate(id_alquiler,
         objeto,
         function (err, alquiler) {
             if (err) return res.status(500).send({ message: "Error" });
 
             if (!res) return res.status(404).send({ message: "El doc no existe" });
-
-            enviarEmailAUsuario(
+            //console.log(alquiler)
+/*             enviarEmailAUsuario(
                 alquiler.name_usuarioPropietario,
                 "Código de entrega propietario",
                 "¡Enhobrabuena! Tu publicación ha sido pagada",
                 "¡Hola! Tu código de propietario es el siguiente: <b>" +
                 codigoEntregaPropietario +
                 "</b>. Recuerda darselo al locatario cuando este te lo indique.",
-                "http://localhost:4200/mis-alquileres",
+                "https://localhost:4200/mis-alquileres",
                 "Ir a mis alquileres"
             );
             enviarEmailAUsuario(
@@ -1824,10 +1825,10 @@ router.post("/registrar-proceso-entrega/:id_publicacion", function (req, res) {
                 "¡Hola! Tu código de locatario es el siguiente: <b>" +
                 codigoEntregaLocatario +
                 "</b>. Recuerda darselo al propietario cuando este te lo indique.",
-                "http://localhost:4200/mis-alquileres",
+                "https://localhost:4200/mis-alquileres",
                 "Ir a mis alquileres"
             );
-
+ */
             return res.status(200).send({ alquiler });
         }
     );
@@ -2106,8 +2107,10 @@ function enviarEmailAUsuario(
     url,
     mensajeBoton
 ) {
+    console.log(username)
     variable = {};
     User.findOne({ name: username }, function (err, usuario) {
+        console.log(usuario);
         enviar(usuario.email, asunto, titulo, mensaje, url, mensajeBoton);
     });
 }

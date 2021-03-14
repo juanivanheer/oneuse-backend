@@ -44,6 +44,9 @@ const misAlquileres = new Schema({
     cantidadAlquilar: {
         type: Number,
     },
+    montoTotal: {
+        type: Number,
+    },
     codigoPropietarioIngresado: {
         type: Boolean
     },
@@ -65,7 +68,7 @@ const misAlquileres = new Schema({
     imagen: {
         type: String,
     }
- 
+
 }, {
     timestamps: true
 });
