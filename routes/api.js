@@ -425,7 +425,7 @@ router.post("/register-publicacion", function (req, res) {
         if (err) return res.status(500).send("Error papi");
         if (!res) return res.status(404).send("Error papi");
 
-        const url = "http://localhost:4200/publicaciones/" + publicaciones.id;
+       /*  const url = "http://localhost:4200/publicaciones/" + publicaciones.id;
 
         enviar(
             publicaciones.email,
@@ -434,7 +434,7 @@ router.post("/register-publicacion", function (req, res) {
             "Gracias por confiar en nosotros. Para ver tu nueva publicacion, haz click en el siguiente link:",
             url,
             "Ir a la publicacion"
-        );
+        ); */
 
         return res.status(200).send("todo legal papi");
     });
