@@ -534,50 +534,47 @@ router.post("/register-publicacion", function (req, res) {
     });
 });
 
-router.post(
-    "/upload-publicacion-img/:email/:titulo/:categoria",
-    multipartMiddlewarePublicaciones,
-    function (req, res) {
-        var email = req.params.email;
-        var titulo = req.params.titulo;
-        var categoria = req.params.categoria;
-        var fileName = "asd";
+router.post("/upload-publicacion-img/:email/:titulo/:categoria", multipartMiddlewarePublicaciones, function (req, res) {
+    var email = req.params.email;
+    var titulo = req.params.titulo;
+    var categoria = req.params.categoria;
+    var fileName = "asd";
 
-        if (req.files) {
-            let nombre = "";
-            let nombreFinal;
-            if (req.files.multiplefile.length == undefined) {
-                var filePath = req.files.multiplefile.path;
+    if (req.files) {
+        let nombre = "";
+        let nombreFinal;
+        if (req.files.multiplefile.length == undefined) {
+            var filePath = req.files.multiplefile.path;
+            var fileSplit = filePath.split("\\");
+            var fileName = fileSplit[1];
+            nombre += '{"imagen0":' + '"' + fileName + '",';
+            nombreFinal = nombre.slice(0, -1);
+            nombreFinal += "}";
+        } else {
+            for (let i = 0; i < req.files.multiplefile.length; i++) {
+                var filePath = req.files.multiplefile[i].path;
                 var fileSplit = filePath.split("\\");
                 var fileName = fileSplit[1];
-                nombre += '{"imagen0":' + '"' + fileName + '",';
-                nombreFinal = nombre.slice(0, -1);
-                nombreFinal += "}";
-            } else {
-                for (let i = 0; i < req.files.multiplefile.length; i++) {
-                    var filePath = req.files.multiplefile[i].path;
-                    var fileSplit = filePath.split("\\");
-                    var fileName = fileSplit[1];
-                    if (i == 0) nombre += '{"imagen' + i + '":' + '"' + fileName + '",';
-                    else nombre += '"imagen' + i + '":"' + fileName + '",';
-                }
-                nombreFinal = nombre.slice(0, -1);
-                nombreFinal += "}";
+                if (i == 0) nombre += '{"imagen' + i + '":' + '"' + fileName + '",';
+                else nombre += '"imagen' + i + '":"' + fileName + '",';
             }
+            nombreFinal = nombre.slice(0, -1);
+            nombreFinal += "}";
+        }
 
-            Publicacion.findOneAndUpdate(
-                { email: email, titulo: titulo, categoria: categoria },
-                { multiplefile: nombreFinal },
-                { new: true },
-                (err, projectUpdated) => {
-                    if (err) return res.status(500).send({ message: "Imagen no subida" });
-                    if (!projectUpdated)
-                        return res.status(400).send({ message: "No existe" });
-                    return res.status(200).send(projectUpdated);
-                }
-            );
-        } else console.log("ERROR");
-    }
+        Publicacion.findOneAndUpdate(
+            { email: email, titulo: titulo, categoria: categoria },
+            { multiplefile: nombreFinal },
+            { new: true },
+            (err, projectUpdated) => {
+                if (err) return res.status(500).send({ message: "Imagen no subida" });
+                if (!projectUpdated)
+                    return res.status(400).send({ message: "No existe" });
+                return res.status(200).send(projectUpdated);
+            }
+        );
+    } else console.log("ERROR");
+}
 );
 
 router.get("/get-publicacion/:email", function (req, res) {
@@ -748,32 +745,32 @@ router.post("/update-superadmin-publicacion", function (req, res) {
 /* ------------------------------ Busqueda de publicaciones ----------------------------------- */
 router.get("/search-categoria", function (req, res) {
     var categoria = req.query.c;
+    var subcategoria = req.query.s;
     var preciodia = req.query.precio;
     var estrellas = req.query.star;
-    var subcategoria = req.query.s;
 
     var query;
 
-    /*  c sc p e 
-          0  0 0 0
-          0  0 0 1
-          0  0 1 0
-          0  0 1 1
+    /*    c sc p e 
+          0  0 0 0  0
+          0  0 0 1  1
+          0  0 1 0  2
+          0  0 1 1  3
   
-          0  1 0 0
-          0  1 0 1
-          0  1 1 0
-          0  1 1 1
+          0  1 0 0  4
+          0  1 0 1  5
+          0  1 1 0  6   
+          0  1 1 1  7
   
-          1  0 0 0
-          1  0 0 1
-          1  0 1 0
-          1  0 1 1
+          1  0 0 0  8
+          1  0 0 1  9  
+          1  0 1 0  10
+          1  0 1 1  11
           
-          1  1 0 0
-          1  1 0 1
-          1  1 1 0
-          1  1 1 1  
+          1  1 0 0  12  
+          1  1 0 1  13
+          1  1 1 0  14
+          1  1 1 1  15
       */
 
     /* URL EJEMPLO: http://localhost:4201/api/search-categoria/Hogar?p=300&s=Decoración */
