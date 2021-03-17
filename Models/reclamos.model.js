@@ -18,6 +18,16 @@ const reclamos = new Schema({
     intervencion: {
         type: Boolean,
     },
+    estado_reclamo: {
+        type: String,
+    },
+    respuesta: {
+        type: Boolean,
+    },
+    nro_respuesta: {
+        type: Number,
+    },
+
     
     
 }, {
@@ -25,3 +35,6 @@ const reclamos = new Schema({
     });
 
 module.exports = mongoose.model('reclamos', reclamos, 'reclamos');
+
+
+

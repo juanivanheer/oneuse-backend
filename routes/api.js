@@ -2169,6 +2169,17 @@ router.post("/cancelar-alquiler", (req, res) => {
     });
 });
 
+router.get("/get-all-reclamos", function (req, res) {
+    Reclamo.find(function (err, reclamos) {
+        if (err) return res.status(500).send({ message: "Error" });
+
+        if (!reclamos)
+            return res.status(404).send({ message: "No hay reclamos" });
+        return res.status(200).send({ reclamos });
+    });
+});
+
+
 /* PARA ENVIO DE MAILS */
 function enviarEmailAUsuario(
     username,
