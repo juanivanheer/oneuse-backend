@@ -47,6 +47,9 @@ const publicacionesSchema = new Schema({
     destacar: {
         type: String,
     },
+    pago_destacacion: {
+        type: Boolean
+    },
     estado: {
         type: String,
     },

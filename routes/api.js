@@ -2,7 +2,6 @@
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
-var encodeUrl = require("encodeurl");
 var moment = require("moment");
 const app = express();
 const bodyParser = require("body-parser");
@@ -35,14 +34,117 @@ app.use((req, res, next) => {
 });
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-const mercadopago = require('mercadopago');
+//Para Google Drive
+/*
+const readline = require('readline');
+const { google } = require('googleapis');
+// If modifying these scopes, delete token.json.
+const SCOPES = ['https://www.googleapis.com/auth/drive'];
+// The file token.json stores the user's access and refresh tokens, and is
+// created automatically when the authorization flow completes for the first
+// time.
+const TOKEN_PATH = 'token.json';
+let auth;
+// Load client secrets from a local file.
+fs.readFile('./routes/credentials.json', (err, content) => {
+    if (err) return console.log('Error loading client secret file:', err);
+    // Authorize a client with credentials, then call the Google Drive API.
+    authorize(JSON.parse(content));
+});
 
-//Access token cuenta juan
-//mercadopago.configurations.setAccessToken("TEST-4098695958980794-042601-bbf0cd1a389dea655e9504621063e743-25259647");
+/**
+ * Create an OAuth2 client with the given credentials, and then execute the
+ * given callback function.
+ * @param {Object} credentials The authorization client credentials.
+ * @param {function} callback The callback to call with the authorized client.
+ 
+function authorize(credentials) {
+    const { client_secret, client_id, redirect_uris } = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+        client_id,
+        client_secret,
+        redirect_uris[0]
+    );
 
-//Access token cuenta vendedor test
-//mercadopago.configurations.setAccessToken("TEST-6154841231917150-052800-34a55d9d7e73a0024e594c6cb7a6b650-575276817");
-mercadopago.configurations.setAccessToken("APP_USR-6154841231917150-052800-3cce632f355c757cbf37f535bd70be21-575276817");
+    // Check if we have previously stored a token.
+    fs.readFile(TOKEN_PATH, (err, token) => {
+        if (err) return getAccessToken(oAuth2Client);
+        oAuth2Client.setCredentials(JSON.parse(token));
+        auth = oAuth2Client;
+    });
+}
+
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * execute the given callback with the authorized OAuth2 client.
+ * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+ * @param {getEventsCallback} callback The callback for the authorized client.
+ 
+
+
+function getAccessToken(oAuth2Client) {
+    const authUrl = oAuth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+    });
+    console.log('Authorize this app by visiting this url:', authUrl);
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+    rl.question('Enter the code from that page here', (code) => {
+        rl.close();
+        oAuth2Client.getToken(code, (err, token) => {
+            if (err) return console.error('Error retrieving access token', err);
+            oAuth2Client.setCredentials(token);
+            // Store the token to disk for later program executions
+            fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+                if (err) return console.error(err);
+                console.log('Token stored to', TOKEN_PATH);
+            });
+            auth = authoAuth2Client;
+        });
+    });
+}
+
+//   https://lh3.google.com/u/3/d/  + ID creado por POST
+router.post('/uploadAFile', (req, res) => {
+    var fileMetadata = {
+        name: '0EBnWERgXJexxCcEmv4_CiKI', // file name that will be saved in google drive
+    };
+
+    var media = {
+        mimeType: 'image/jpg',
+        body: fs.createReadStream('./publicaciones/0EBnWERgXJexxCcEmv4_CiKI.jpg'), // Reading the file from our server
+    };
+
+    // Authenticating drive API
+    const drive = google.drive({ version: 'v3', auth });
+
+    // Uploading Single image to drive
+    drive.files.create(
+        {
+            resource: fileMetadata,
+            media: media,
+        },
+        async (err, file) => {
+            if (err) {
+                // Handle error
+                console.error(err.msg);
+
+                return res
+                    .status(400)
+                    .json({ errors: [{ msg: 'Server Error try again later' }] });
+            } else {
+                // if file upload success then return the unique google drive id
+                res.status(200).json({
+                    fileID: file.data.id,
+                });
+            }
+        }
+    );
+});
+*/
 
 /* ----------------------------------- MODELOS ----------------------------------- */
 const User = require("../auth/auth.model");
@@ -73,17 +175,8 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-//const bodyParser = require('body-parser');
-//const bodyParserJSON = bodyParser.json();
-//const bodyParserURLEncoded = bodyParser.urlencoded({extended: true});
-
-//app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({extended: true}));
-
 const cors = require("cors");
 app.use(cors());
-//app.use('/api', router);
-//authRoutes(router);
 
 /* ------------------------------ Rutas de usuarios ----------------------------------- */
 router.get("/", (req, res) => {
@@ -420,23 +513,24 @@ router.post("/register-publicacion", function (req, res) {
     publicaciones.cantDias = datos.cantDias;
     publicaciones.cantidadDisponible = datos.cantidadDisponible;
     publicaciones.contadorDeVisita = 0;
+    publicaciones.pago_destacacion = false;
 
     publicaciones.save((err, res1) => {
-        if (err) return res.status(500).send("Error papi");
-        if (!res) return res.status(404).send("Error papi");
+        if (err) return res.status(500).send(res1);
+        if (!res) return res.status(404).send(res1);
 
-       /*  const url = "http://localhost:4200/publicaciones/" + publicaciones.id;
+        /*  const url = "http://localhost:4200/publicaciones/" + publicaciones.id;
+ 
+         enviar(
+             publicaciones.email,
+             "Su publicacion ha sido publicada exitosamente",
+             "¡Enhorabuena, tu producto ha sido publicado!",
+             "Gracias por confiar en nosotros. Para ver tu nueva publicacion, haz click en el siguiente link:",
+             url,
+             "Ir a la publicacion"
+         ); */
 
-        enviar(
-            publicaciones.email,
-            "Su publicacion ha sido publicada exitosamente",
-            "¡Enhorabuena, tu producto ha sido publicado!",
-            "Gracias por confiar en nosotros. Para ver tu nueva publicacion, haz click en el siguiente link:",
-            url,
-            "Ir a la publicacion"
-        ); */
-
-        return res.status(200).send("todo legal papi");
+        return res.status(200).send(res1);
     });
 });
 
@@ -538,6 +632,7 @@ router.post(
         publicaciones.tipoAlquiler = datos.tipoAlquiler;
         publicaciones.destacar = datos.destacar;
         publicaciones.estado = datos.estado;
+        publicaciones.pago_destacacion = datos.pago_destacacion;
 
         Publicacion.findByIdAndUpdate(
             id,
@@ -548,7 +643,7 @@ router.post(
 
                 if (!eliminado) return res.status(404).send({ message: "Error" });
 
-                return res.status(200).send({ message: "Todo ok" });
+                return res.status(200).send(eliminado);
             }
         );
     }
@@ -593,7 +688,7 @@ router.get("/get-image-publicacion/:imagen", function (req, respuesta1) {
 
 router.get("/get-publicaciones-destacadas", function (req, res) {
     Publicacion.find(
-        { destacar: "SI", estado: "ACTIVA" },
+        { pago_destacacion: true, estado: "ACTIVA" },
         (err, publicaciones) => {
             if (err) return res.status(500).send({ message: "Error" });
 
@@ -1742,41 +1837,39 @@ router.post("/update-superadmin-alquiler/", function (req, res) {
     });
 });
 
-router.post(
-    "/registrar-alquiler/:id_publicacion/:usuarioPropietario/:usuarioLocatario/:cantidadDias/:cantidadAlquilar/:imagen/:montoTotal",
-    function (req, res) {
-        var estado = "En proceso de pago";
-        var id_publicacion = req.params.id_publicacion;
-        var name_usuarioPropietario = req.params.usuarioPropietario;
-        var name_usuarioLocatario = req.params.usuarioLocatario;
-        var cantidadDias = req.params.cantidadDias;
-        var cantidadAlquilar = req.params.cantidadAlquilar;
-        var imagen = req.params.imagen;
-        var fuePagado = false;
-        var montoTotal = req.params.montoTotal;
-        
-        var objeto = {
-            imagen: imagen,
-            fuePagado: fuePagado,
-            estado: estado,
-            id_publicacion: id_publicacion,
-            name_usuarioPropietario: name_usuarioPropietario,
-            name_usuarioLocatario: name_usuarioLocatario,
-            cantidadDias: cantidadDias,
-            cantidadAlquilar: cantidadAlquilar,
-            montoTotal: montoTotal
-        };
+router.post("/registrar-alquiler/:id_publicacion/:usuarioPropietario/:usuarioLocatario/:cantidadDias/:cantidadAlquilar/:imagen/:montoTotal", function (req, res) {
+    var estado = "En proceso de pago";
+    var id_publicacion = req.params.id_publicacion;
+    var name_usuarioPropietario = req.params.usuarioPropietario;
+    var name_usuarioLocatario = req.params.usuarioLocatario;
+    var cantidadDias = req.params.cantidadDias;
+    var cantidadAlquilar = req.params.cantidadAlquilar;
+    var imagen = req.params.imagen;
+    var fuePagado = false;
+    var montoTotal = req.params.montoTotal;
 
-        var misAlquileres = new MisAlquileres(objeto);
+    var objeto = {
+        imagen: imagen,
+        fuePagado: fuePagado,
+        estado: estado,
+        id_publicacion: id_publicacion,
+        name_usuarioPropietario: name_usuarioPropietario,
+        name_usuarioLocatario: name_usuarioLocatario,
+        cantidadDias: cantidadDias,
+        cantidadAlquilar: cantidadAlquilar,
+        montoTotal: montoTotal
+    };
 
-        misAlquileres.save((err, alquiler) => {
-            if (err) return res.status(500).send({ message: "Error" });
+    var misAlquileres = new MisAlquileres(objeto);
 
-            if (!res) return res.status(404).send({ message: "El doc no existe" });
+    misAlquileres.save((err, alquiler) => {
+        if (err) return res.status(500).send({ message: "Error" });
 
-            return res.status(200).send({ alquiler });
-        });
-    }
+        if (!res) return res.status(404).send({ message: "El doc no existe" });
+
+        return res.status(200).send({ alquiler });
+    });
+}
 );
 
 router.post("/registrar-proceso-entrega/:id_alquiler", function (req, res) {
@@ -1801,44 +1894,39 @@ router.post("/registrar-proceso-entrega/:id_alquiler", function (req, res) {
         codigoLocatarioIngresado: codigoLocatarioIngresado,
     };
 
-    MisAlquileres.findByIdAndUpdate(id_alquiler,
-        objeto,
-        function (err, alquiler) {
-            if (err) return res.status(500).send({ message: "Error" });
+    MisAlquileres.findByIdAndUpdate(id_alquiler, objeto, function (err, alquiler) {
+        if (err) return res.status(500).send({ message: "Error" });
 
-            if (!res) return res.status(404).send({ message: "El doc no existe" });
-            //console.log(alquiler)
-/*             enviarEmailAUsuario(
-                alquiler.name_usuarioPropietario,
-                "Código de entrega propietario",
-                "¡Enhobrabuena! Tu publicación ha sido pagada",
-                "¡Hola! Tu código de propietario es el siguiente: <b>" +
-                codigoEntregaPropietario +
-                "</b>. Recuerda darselo al locatario cuando este te lo indique.",
-                "https://localhost:4200/mis-alquileres",
-                "Ir a mis alquileres"
-            );
-            enviarEmailAUsuario(
-                alquiler.name_usuarioLocatario,
-                "Código de entrega locatario",
-                "¡Enhobrabuena! Tu producto ha sido pagado",
-                "¡Hola! Tu código de locatario es el siguiente: <b>" +
-                codigoEntregaLocatario +
-                "</b>. Recuerda darselo al propietario cuando este te lo indique.",
-                "https://localhost:4200/mis-alquileres",
-                "Ir a mis alquileres"
-            );
- */
-            return res.status(200).send({ alquiler });
-        }
+        if (!res) return res.status(404).send({ message: "El doc no existe" });
+        //console.log(alquiler)
+        /*             enviarEmailAUsuario(
+                        alquiler.name_usuarioPropietario,
+                        "Código de entrega propietario",
+                        "¡Enhobrabuena! Tu publicación ha sido pagada",
+                        "¡Hola! Tu código de propietario es el siguiente: <b>" +
+                        codigoEntregaPropietario +
+                        "</b>. Recuerda darselo al locatario cuando este te lo indique.",
+                        "https://localhost:4200/mis-alquileres",
+                        "Ir a mis alquileres"
+                    );
+                    enviarEmailAUsuario(
+                        alquiler.name_usuarioLocatario,
+                        "Código de entrega locatario",
+                        "¡Enhobrabuena! Tu producto ha sido pagado",
+                        "¡Hola! Tu código de locatario es el siguiente: <b>" +
+                        codigoEntregaLocatario +
+                        "</b>. Recuerda darselo al propietario cuando este te lo indique.",
+                        "https://localhost:4200/mis-alquileres",
+                        "Ir a mis alquileres"
+                    );
+         */
+        return res.status(200).send({ alquiler });
+    }
     );
 });
 
 /*CUANDO EL LOCATARIO INGRESA EL CÓDIGO DEL PROPIETARIO */
-router.post("/registrar-entrega-locatario/:codigoEntregaPropietario", function (
-    req,
-    res
-) {
+router.post("/registrar-entrega-locatario/:codigoEntregaPropietario", function (req, res) {
     var codigoEntregaPropietario = req.params.codigoEntregaPropietario;
     var codigoPropietarioIngresado = true;
 
@@ -1856,10 +1944,7 @@ router.post("/registrar-entrega-locatario/:codigoEntregaPropietario", function (
 });
 
 /*CUANDO EL PROPIETARIO INGRESA EL CÓDIGO DEL LOCATARIO */
-router.post("/registrar-entrega-propietario/:codigoEntregaLocatario", function (
-    req,
-    res
-) {
+router.post("/registrar-entrega-propietario/:codigoEntregaLocatario", function (req, res) {
     var codigoEntregaLocatario = req.params.codigoEntregaLocatario;
     var codigoLocatarioIngresado = true;
     var estado = "En proceso de devolución";
@@ -1927,10 +2012,7 @@ router.post("/registrar-entrega-propietario/:codigoEntregaLocatario", function (
 });
 
 /* Este evento lo genera el propietario cuando coloca el botón "Finalizar alquiler" en "Mis Alquileres" */
-router.post("/registrar-proceso-finalizacion/:id_usuarioPropietario", function (
-    req,
-    res
-) {
+router.post("/registrar-proceso-finalizacion/:id_usuarioPropietario", function (req, res) {
     var id_usuarioPropietario = req.params.id_usuarioPropietario;
     var fueDevuelto = true;
     var codigoDevolucionPropietario = randomstring.generate(10);
@@ -1959,69 +2041,58 @@ router.post("/registrar-proceso-finalizacion/:id_usuarioPropietario", function (
     );
 });
 
-router.post(
-    "/registrar-finalizacion-locatario/:codigoDevolucionPropietario",
-    function (req, res) {
-        var codigoDevolucionPropietario = req.params.codigoDevolucionPropietario;
-        var codigoPropietarioDevolucionIngresado = true;
+router.post("/registrar-finalizacion-locatario/:codigoDevolucionPropietario", function (req, res) {
+    var codigoDevolucionPropietario = req.params.codigoDevolucionPropietario;
+    var codigoPropietarioDevolucionIngresado = true;
 
-        MisAlquileres.findOneAndUpdate(
-            { codigoDevolucionPropietario: codigoDevolucionPropietario },
-            {
-                codigoPropietarioDevolucionIngresado: codigoPropietarioDevolucionIngresado,
-            },
-            function (err, alquiler) {
-                if (err) return res.status(500).send({ message: "Error" });
-
-                if (!res) return res.status(404).send({ message: "El doc no existe" });
-
-                return res.status(200).send({ alquiler });
-            }
-        );
-    }
-);
-
-router.post(
-    "/registrar-finalizacion-propietario/:codigoDevolucionLocatario",
-    function (req, res) {
-        var codigoDevolucionLocatario = req.params.codigoDevolucionLocatario;
-        var codigoLocatarioDevolucionIngresado = true;
-        var estado = "Finalizado";
-        var date = new Date();
-        var fechaDevolucion = moment(date).format("MM/DD/YYYY");
-
-        MisAlquileres.findOneAndUpdate(
-            { codigoDevolucionLocatario: codigoDevolucionLocatario },
-            {
-                estado: estado,
-                codigoLocatarioDevolucionIngresado: codigoLocatarioDevolucionIngresado,
-                fechaDevolucion: fechaDevolucion,
-            },
-            function (err, alquiler) {
-                if (err) return res.status(500).send({ message: "Error" });
-
-                if (!res) return res.status(404).send({ message: "El doc no existe" });
-
-                return res.status(200).send({ alquiler });
-            }
-        );
-    }
-);
-
-router.get("/get-alquiler-publicaciones/:name_usuarioPropietario", function (
-    req,
-    res
-) {
-    var name_usuarioPropietario = req.params.name_usuarioPropietario;
-
-    MisAlquileres.find(
-        { name_usuarioPropietario: name_usuarioPropietario },
+    MisAlquileres.findOneAndUpdate(
+        { codigoDevolucionPropietario: codigoDevolucionPropietario },
+        {
+            codigoPropietarioDevolucionIngresado: codigoPropietarioDevolucionIngresado,
+        },
         function (err, alquiler) {
             if (err) return res.status(500).send({ message: "Error" });
 
-            if (!alquiler)
-                return res.status(404).send({ message: "El doc no existe" });
+            if (!res) return res.status(404).send({ message: "El doc no existe" });
 
+            return res.status(200).send({ alquiler });
+        }
+    );
+}
+);
+
+router.post("/registrar-finalizacion-propietario/:codigoDevolucionLocatario", function (req, res) {
+    var codigoDevolucionLocatario = req.params.codigoDevolucionLocatario;
+    var codigoLocatarioDevolucionIngresado = true;
+    var estado = "Finalizado";
+    var date = new Date();
+    var fechaDevolucion = moment(date).format("MM/DD/YYYY");
+
+    MisAlquileres.findOneAndUpdate(
+        { codigoDevolucionLocatario: codigoDevolucionLocatario },
+        {
+            estado: estado,
+            codigoLocatarioDevolucionIngresado: codigoLocatarioDevolucionIngresado,
+            fechaDevolucion: fechaDevolucion,
+        },
+        function (err, alquiler) {
+            if (err) return res.status(500).send({ message: "Error" });
+
+            if (!res) return res.status(404).send({ message: "El doc no existe" });
+
+            return res.status(200).send({ alquiler });
+        }
+    );
+}
+);
+
+router.get("/get-alquiler-publicaciones/:name_usuarioPropietario", function (req, res) {
+    var name_usuarioPropietario = req.params.name_usuarioPropietario;
+
+    MisAlquileres.find({ name_usuarioPropietario: name_usuarioPropietario },
+        function (err, alquiler) {
+            if (err) return res.status(500).send({ message: "Error" });
+            if (!alquiler) return res.status(404).send({ message: "El doc no existe" });
             return res.status(200).send({ alquiler });
         }
     );
@@ -2277,33 +2348,3 @@ function asd(p) {
     console.log(arreglo.length)
 }
 
-/* -------------------- MERCADO PAGO --------------------------- */
-
-router.post("/pago-tarjeta-mp", function (req, res) {
-    /*
-    var payment_data = {
-        transaction_amount: 105,
-        token: 'ff8080814c11e237014c1ff593b57b4d'
-        description: 'Fantastic Marble Bag',
-        installments: 1,
-        payment_method_id: 'visa',
-        payer: {
-            email: 'test@test.com'
-        }
-    };
-    */
-    let payment_data = req.body;
-
-    mercadopago.payment.save(payment_data).then(function (data) {
-        //console.log(data);
-        return res.status(200).send(data)
-    }).catch(function (error) {
-        //console.log(error);
-        return res.status(500).send(error)
-    });
-})
-
-router.post("/mp-webhook", function (req, res) {
-    console.log(res);
-    return res.status(200).send("ok");
-})
