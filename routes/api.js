@@ -505,7 +505,7 @@ router.post("/register-publicacion", function (req, res) {
     publicaciones.preciosemana = datos.preciosemana;
     publicaciones.preciomes = datos.preciomes;
     publicaciones.email = email;
-    publicaciones.multiplefile = null;
+    publicaciones.multiplefile = '{"imagen0":"sin_imagen.png"}';
     publicaciones.tipoAlquiler = datos.tipoAlquiler;
     publicaciones.destacar = datos.destacar;
     publicaciones.estado = "ACTIVA";
